@@ -683,7 +683,7 @@ async function sendMessage(text) {
   showTyping();
 
   try {
-  fetch('https://api.anthropic.com/v1/messages', {
+  fetch('https://brightspace-proxy.jimhandh.workers.dev', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
