@@ -656,7 +656,7 @@ async function sendLeadEmail(info) {
   try {
     const res = await fetch('https://formspree.io/f/xzdqvevq', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json',  },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': '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', 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
         name: info.name || 'Unknown',
         email: info.email || 'Unknown',
@@ -683,9 +683,9 @@ async function sendMessage(text) {
   showTyping();
 
   try {
-    const res = await fetch('/.netlify/functions/chat', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json',  },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': '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', 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
@@ -730,9 +730,9 @@ inputEl.addEventListener('input', () => {
 async function initChat() {
   showTyping();
   try {
-    const res = await fetch('/.netlify/functions/chat', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json',  },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': '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', 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
