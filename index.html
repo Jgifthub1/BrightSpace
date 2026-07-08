@@ -759,5 +759,282 @@ async function initChat() {
 
 initChat();
 </script>
+  <!-- 
+  BrightSpace — Sticky "Talk to Rep Bot" CTA + slide-out contact panel
+  Drop this into the site (before </body>). It's self-contained: no external deps.
+  Hand to your dev to (1) wire the form's real submit action to whatever sends 
+  the text-notification to you, and (2) tweak colors to match exact brand hexes.
+-->
+
+<style>
+  :root {
+    --bs-coral: #FF6B4A;
+    --bs-coral-dark: #E8552F;
+    --bs-ink: #1A1A1A;
+    --bs-cream: #FFF8F2;
+  }
+
+  .bs-sticky-cta {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bs-coral);
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 14px 22px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 6px 20px rgba(232, 85, 47, 0.4);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+  .bs-sticky-cta:hover {
+    background: var(--bs-coral-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(232, 85, 47, 0.5);
+  }
+  .bs-sticky-cta:focus-visible {
+    outline: 3px solid var(--bs-ink);
+    outline-offset: 3px;
+  }
+  .bs-sticky-cta .bs-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4AFF7A;
+    box-shadow: 0 0 0 0 rgba(74, 255, 122, 0.6);
+    animation: bs-pulse 2s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes bs-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(74, 255, 122, 0.6); }
+    70% { box-shadow: 0 0 0 8px rgba(74, 255, 122, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(74, 255, 122, 0); }
+  }
+
+  /* Optional tooltip nudge, shown once after scroll depth via JS below */
+  .bs-nudge {
+    position: fixed;
+    right: 20px;
+    bottom: 78px;
+    z-index: 9998;
+    background: var(--bs-ink);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 13px;
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    white-space: nowrap;
+  }
+  .bs-nudge.bs-show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Slide-out panel */
+  .bs-panel-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 9997;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .bs-panel-overlay.bs-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .bs-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 380px;
+    max-width: 90vw;
+    background: var(--bs-cream);
+    z-index: 9998;
+    box-shadow: -8px 0 30px rgba(0,0,0,0.15);
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 24px;
+    box-sizing: border-box;
+  }
+  .bs-panel.bs-open {
+    transform: translateX(0);
+  }
+
+  .bs-panel-close {
+    align-self: flex-end;
+    background: none;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--bs-ink);
+    padding: 4px;
+  }
+
+  .bs-panel h3 {
+    font-size: 22px;
+    margin: 12px 0 4px;
+    color: var(--bs-ink);
+  }
+  .bs-panel p.bs-sub {
+    font-size: 14px;
+    color: #555;
+    margin: 0 0 20px;
+    line-height: 1.4;
+  }
+
+  .bs-field {
+    margin-bottom: 14px;
+  }
+  .bs-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bs-ink);
+    margin-bottom: 6px;
+  }
+  .bs-field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1.5px solid #ddd;
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: inherit;
+  }
+  .bs-field input:focus {
+    outline: none;
+    border-color: var(--bs-coral);
+  }
+
+  .bs-submit {
+    margin-top: 6px;
+    background: var(--bs-coral);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .bs-submit:hover {
+    background: var(--bs-coral-dark);
+  }
+
+  .bs-reassure {
+    margin-top: 14px;
+    font-size: 12.5px;
+    color: #777;
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bs-sticky-cta, .bs-panel, .bs-panel-overlay, .bs-nudge, .bs-dot {
+      transition: none;
+      animation: none;
+    }
+  }
+</style>
+
+<div class="bs-nudge" id="bsNudge">Got a territory in mind? →</div>
+
+<button class="bs-sticky-cta" id="bsStickyBtn">
+  <span class="bs-dot"></span>
+  Talk to Rep Bot
+</button>
+
+<div class="bs-panel-overlay" id="bsOverlay"></div>
+<div class="bs-panel" id="bsPanel">
+  <button class="bs-panel-close" id="bsClose" aria-label="Close">&times;</button>
+  <h3>Let's see if it's a fit</h3>
+  <p class="bs-sub">Drop your name and number — someone from our team will text you back, usually within the hour.</p>
+
+  <form id="bsForm">
+    <div class="bs-field">
+      <label for="bsName">Name</label>
+      <input type="text" id="bsName" name="name" placeholder="Jamie Rivera" required>
+    </div>
+    <div class="bs-field">
+      <label for="bsPhone">Phone number</label>
+      <input type="tel" id="bsPhone" name="phone" placeholder="(555) 123-4567" required>
+    </div>
+    <button type="submit" class="bs-submit">Get in touch →</button>
+  </form>
+
+  <p class="bs-reassure">We'll only text you about the rep program. No spam, ever.</p>
+</div>
+
+<script>
+  (function () {
+    var btn = document.getElementById('bsStickyBtn');
+    var panel = document.getElementById('bsPanel');
+    var overlay = document.getElementById('bsOverlay');
+    var closeBtn = document.getElementById('bsClose');
+    var form = document.getElementById('bsForm');
+    var nudge = document.getElementById('bsNudge');
+
+    function openPanel() {
+      panel.classList.add('bs-open');
+      overlay.classList.add('bs-open');
+      hideNudge();
+    }
+    function closePanel() {
+      panel.classList.remove('bs-open');
+      overlay.classList.remove('bs-open');
+    }
+    function hideNudge() {
+      nudge.classList.remove('bs-show');
+    }
+
+    btn.addEventListener('click', openPanel);
+    closeBtn.addEventListener('click', closePanel);
+    overlay.addEventListener('click', closePanel);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closePanel();
+    });
+
+    // TODO (dev): replace this with the real submit handler that sends
+    // the text notification — likely a fetch() call to whatever endpoint
+    // currently powers the #chat-section form on the live site.
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = document.getElementById('bsName').value;
+      // Placeholder confirmation — swap for real success state once wired up.
+      panel.innerHTML = '<h3>Thanks, ' + name.split(' ')[0] + '!</h3><p class="bs-sub">We got it. Expect a text from our team shortly.</p>';
+    });
+
+    // One-time scroll-depth nudge (shows once, only if panel not already opened)
+    var nudgeShown = false;
+    window.addEventListener('scroll', function () {
+      if (nudgeShown) return;
+      var scrollPct = (window.scrollY) / (document.body.scrollHeight - window.innerHeight);
+      if (scrollPct > 0.4) {
+        nudge.classList.add('bs-show');
+        nudgeShown = true;
+        setTimeout(hideNudge, 4000);
+      }
+    });
+  })();
+</script>
 </body>
 </html>
